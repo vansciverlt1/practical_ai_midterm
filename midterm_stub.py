@@ -1,7 +1,4 @@
-# Hangman Game
-# A simple word guessing game using strings, lists, and functions
-
-# TODO: Import the random module to select random words
+import random
 
 
 word_list = [
@@ -22,29 +19,23 @@ word_list = [
 ]
 
 
-# TODO: Create a function to select a random word that:
-# - Takes no parameters
-# - Uses random.choice to select a random word from your word list
-# - Returns the selected word in lowercase
 
 
-# TODO: Create a function to initialize the game state that:
-# - Takes parameter: word (str)
-# - Creates and returns a dictionary with these keys:
-#   - "word": the word to guess
-#   - "guessed_letters": an empty list to track guessed letters
-#   - "word_completion": a string of underscores representing unguessed letters (e.g., "_ _ _ _")
-#   - "tries_remaining": number of incorrect guesses allowed (start with 6)
+def select_random_word():
+    return random.choice(word_list)
 
 
-# TODO: Create a function to display the game state that:
-# - Takes parameter: game_state (dict)
-# - Prints the current hangman state based on tries_remaining
-#   (You can use ASCII art for different hangman states)
-# - Prints the current word completion (with spaces between letters)
-# - Prints the letters that have been guessed so far
-# - Prints the number of tries remaining
-# ASCII art for hangman states
+
+
+def initialize_game_state(word):
+    return {"word": word,
+        "guessed_letters": [],
+        "word_completion": "_" * len(word),
+        "tries_remaining": 6 }
+
+
+
+
 HANGMAN_STAGES = [
     '''
       +---+
@@ -82,7 +73,7 @@ HANGMAN_STAGES = [
       +---+
       |   |
       O   |
-     /|\\  |
+     /|\  |
           |
           |
     =========''',
@@ -90,7 +81,7 @@ HANGMAN_STAGES = [
       +---+
       |   |
       O   |
-     /|\\  |
+     /|\  |
      /    |
           |
     =========''',
@@ -98,8 +89,8 @@ HANGMAN_STAGES = [
       +---+
       |   |
       O   |
-     /|\\  |
-     / \\  |
+     /|\  |
+     / \  |
           |
     ========='''
 ]
@@ -107,58 +98,80 @@ HANGMAN_STAGES = [
 
 
 
-# TODO: Create a function to get a valid letter guess that:
-# - Takes parameter: game_state (dict)
-# - Asks the user to guess a letter
-# - Validates that the input is:
-#   - A single character
-#   - A letter (not a number or symbol)
-#   - Not already guessed
-# - Returns the valid guessed letter in lowercase
-# - Keeps asking until a valid letter is entered
+def display_game_state(game_state):
+    stage = HANGMAN_STAGES[6 - game_state["tries_remaining"]]
+    print(stage)
+   
+    word_completion = ' '.join(game_state["word_completion"])
+    print(f"Word: {word_completion}")
+   
+    guessed_letters = ' '.join(game_state["guessed_letters"])
+    print(f"Guessed letters: {guessed_letters}")
+   
+    print(f"Tries remaining: {game_state['tries_remaining']}")
 
 
-# TODO: Create a function to update the game state that:
-# - Takes parameters: game_state (dict) and guessed_letter (str)
-# - Adds the guessed letter to the guessed_letters list
-# - Checks if the guessed letter is in the word
-# - If it is, updates the word_completion to reveal the letter
-# - If it's not, decreases the tries_remaining
-# - Returns True if the guess was correct, False otherwise
-
-
-# TODO: Create a function to check if the game is over that:
-# - Takes parameter: game_state (dict)
-# - Returns True if the word is completely guessed or no tries remain
-# - Returns False otherwise
-
-
-# TODO: Create a function to check if the player won that:
-# - Takes parameter: game_state (dict)
-# - Returns True if the word_completion matches the word (no more underscores)
-# - Returns False otherwise
-
-
-# TODO: Create the main game function that:
-# - Takes no parameters
-# - Selects a random word
-# - Initializes the game state
-# - Displays welcome message and initial game state
-# - Loops until the game is over:
-#   - Gets a valid letter guess
-#   - Updates the game state with the guess
-#   - Displays the updated game state
-# - When game ends, displays win or lose message
-# - Reveals the word if the player lost
-# - Asks if the player wants to play again
-
-
-# TODO: Create the main program that:
-# - Prints a welcome message
-# - Calls the main game function
-# - Handles play again logic
-if __name__ == "__main__":
-    # Print a welcome message
-    print("Welcome to Hangman!")
-    # Call the main game function to start the game
+def guess_a_letter(game_state):
     while True:
+        letter_guess = input("Guess a letter: ").lower()  
+        if len(letter_guess) == 1 and letter_guess.isalpha() and letter_guess not in game_state['guessed_letters']:
+            return letter_guess
+        print("Make sure you have written only one letter.")
+
+
+def update_game(game_state, guessed_letter):
+    game_state['guessed_letters'].append(guessed_letter)
+   
+    if guessed_letter in game_state['word']:
+        new_completion = list(game_state['word_completion'])
+       
+        for i, letter in enumerate(game_state['word']):
+            if letter == guessed_letter:
+                new_completion[i] = guessed_letter
+       
+        game_state['word_completion'] = ''.join(new_completion)
+        return True
+    else:
+        game_state['tries_remaining'] -= 1
+        return False
+
+
+
+
+def game_over(game_state):
+    return '_' not in game_state['word_completion'] or game_state['tries_remaining'] == 0
+
+
+
+
+def player_won(game_state):
+    return game_state['word_completion'] == game_state['word']
+
+
+def main_game():
+    word = select_random_word()
+    game_state = initialize_game_state(word)
+    print("Let's start a game of Hangman!")
+    display_game_state(game_state)
+
+
+    while not game_over(game_state):
+        guessed_letter = guess_a_letter(game_state)
+        update_game(game_state, guessed_letter)
+        display_game_state(game_state)
+       
+    if player_won(game_state):
+        print("You won! Nice!")
+    else:
+        print(f"I win! The word was: {game_state['word']}")
+
+
+if __name__ == "__main__":
+    print("Are you ready to play a game of Hangman?")
+   
+    while True:
+        main_game()
+        another_game = input("Would you like to play again? (yes/no): ").lower()
+        if another_game != 'yes':
+            print("Thanks for playing!")
+            break
