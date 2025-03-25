@@ -19,8 +19,6 @@ word_list = [
 ]
 
 
-
-
 def select_random_word():
     return random.choice(word_list)
 
